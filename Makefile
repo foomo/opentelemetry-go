@@ -103,10 +103,9 @@ upgrade: go.work
 ## Create tags for submodules TAG=1.0.0
 tag.submodules:
 	@echo "$(TAG)" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "❌ TAG must be vX.Y.Z format"; exit 1; }
-	@git diff-index --quiet HEAD -- || { echo "❌ Uncommitted changes detected"; exit 1; }
-	@git rev-parse "$(TAG)" >/dev/null 2>&1 || { echo "❌ Tag v$(TAG) does not exist"; exit 1; }
+	@git rev-parse "$(TAG)" >/dev/null 2>&1 || { echo "❌ Tag $(TAG) does not exist"; exit 1; }
 	@echo "🔖 Creating submodule tags..."
-	@find . -type f -name 'go.mod' -mindepth 2 -not -path './vendor/*' -exec sh -c 'dir=$$(dirname {} | sed "s|^\./||"); tag="$$dir/v$(TAG)"; git rev-parse "$$tag" >/dev/null 2>&1 || { echo "🔖 $$tag"; git tag "$$tag"; }' \;
+	@find . -type f -name 'go.mod' -mindepth 2 -not -path './vendor/*' -exec sh -c 'dir=$$(dirname {} | sed "s|^\./||"); tag="$$dir/$(TAG)"; git rev-parse "$$tag" >/dev/null 2>&1 || { echo "🔖 $$tag"; git tag "$$tag"; }' \;
 	@echo "🔖 Pushing tags..."
 	@git push origin --tags
 
