@@ -11,9 +11,7 @@ linters:
   default: all
   disable:
     # Project specific linters
-    - unused
     - paralleltest
-    - forbidigo
     # Discouraged linters
     - noinlineerr # Disallows inline error handling (`if err := ...; err != nil {`).
     - embeddedstructfieldcheck #  Embedded types should be at the top of the field list of a struct, and there must be an empty line separating embedded fields from regular fields. [fast]
@@ -56,9 +54,6 @@ linters:
 
   # https://golangci-lint.run/docs/linters/
   settings:
-    # https://golangci-lint.run/docs/linters/configuration/#staticcheck
-    staticcheck:
-      checks: [ all, -ST1003, -SA1019 ]
     # https://golangci-lint.run/docs/linters/configuration/#exhaustive
     exhaustive:
       default-signifies-exhaustive: true
@@ -70,8 +65,6 @@ linters:
     # https://golangci-lint.run/docs/linters/configuration/#gomoddirectives
     gomoddirectives:
       replace-local: true
-      replace-allow-list:
-        - github.com/iancoleman/strcase
     # https://golangci-lint.run/docs/linters/configuration/#gosec
     gosec:
       severity: medium
