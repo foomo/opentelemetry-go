@@ -11,6 +11,7 @@ linters:
   default: all
   disable:
     # Project specific linters
+    - tparallel
     - paralleltest
     # Discouraged linters
     - noinlineerr # Disallows inline error handling (`if err := ...; err != nil {`).
