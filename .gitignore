@@ -1,0 +1,53 @@
+.*
+*.log
+*.pid
+*.retry
+*.out
+*.tgz
+*.zip
+*.pem
+**/bin/
+**/tmp/
+
+## Git
+!.gitignore
+!.gitkeep
+
+## GitHub
+!.github/
+
+## Mise
+!.mise.toml
+!.mise.[a-z].toml
+.mise.local.toml
+
+## Lefthook
+!.lefthook.yaml
+
+## VSCode
+!.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.default.json
+
+## Editorconfig
+!.editorconfig
+
+### Golang
+go.work
+go.work.sum
+!.golangci.yaml
+!.goreleaser.yaml
+
+## Node ##
+!.npmrc
+**/node_modules/
+
+## TypeScript
+*.tsbuildinfo
+
+## Vitepress
+!**/.vitepress
+**/.vitepress/*
+!**/.vitepress/theme/
+!**/.vitepress/config.mts
