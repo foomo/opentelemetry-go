@@ -5,35 +5,39 @@ import (
 	"testing"
 	"time"
 
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 // ReportTraces configures a trace provider for collecting and reporting spans, with cleanup on test completion.
 //
 //		func TestWithTrace(t *testing.T) {
-//	    exporter := glossytrace.NewTesting(glossytrace.WithFlamegraph(), glossytrace.WithSpanAttributes())
-//		  testing.ReportTraces(t, exporter)
+//	    exporter := glossytrace.NewTest(t, glossytrace.WithFlamegraph(), glossytrace.WithSpanAttributes())
+//		  tp := testingx.ReportTraces(t, exporter)
 //		}
-func ReportTraces(tb testing.TB, exporter trace.SpanExporter) {
+func ReportTraces(tb testing.TB, exporter trace.SpanExporter) *trace.TracerProvider {
 	tb.Helper()
+
+	// var pcs [1]uintptr
+	// n := runtime.Callers(2, pcs[:])
 
 	sp := trace.NewSimpleSpanProcessor(exporter)
 	tp := trace.NewTracerProvider(
 		trace.WithSpanProcessor(sp),
 	)
-	prev := otel.GetTracerProvider()
-
-	otel.SetTracerProvider(tp)
 
 	tb.Cleanup(func() {
 		ctx, cancel := context.WithTimeout(context.WithoutCancel(tb.Context()), time.Second)
 		defer cancel()
 
+		// if n > 0 {
+		// 	f, _ := runtime.CallersFrames([]uintptr{pcs[0]}).Next()
+		// 	_, _ = fmt.Fprintf(tb.Output(), "%s:%d: ", filepath.Base(f.File), f.Line)
+		// }
+
 		if err := tp.Shutdown(ctx); err != nil {
 			tb.Fatal(err)
 		}
-
-		otel.SetTracerProvider(prev)
 	})
+
+	return tp
 }
