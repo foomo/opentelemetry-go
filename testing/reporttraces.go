@@ -20,7 +20,9 @@ func ReportTraces(tb testing.TB, exporter trace.SpanExporter) *trace.TracerProvi
 	// var pcs [1]uintptr
 	// n := runtime.Callers(2, pcs[:])
 
-	sp := trace.NewSimpleSpanProcessor(exporter)
+	sp := trace.NewBatchSpanProcessor(exporter,
+		trace.WithBatchTimeout(time.Hour), // never auto-flush
+	)
 	tp := trace.NewTracerProvider(
 		trace.WithSpanProcessor(sp),
 	)
