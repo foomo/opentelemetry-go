@@ -85,6 +85,8 @@ test.update: go.work
 test.bench: go.work
 	@GO_TEST_TAGS=-skip go test -tags=safe -bench=. -benchmem work
 
+### Dependencies
+
 .PHONY: outdated
 ## Show outdated direct dependencies
 outdated:
