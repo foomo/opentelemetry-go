@@ -6,9 +6,8 @@ export default defineConfig({
 	description: 'Collection of extensions for OpenTelemetry-Go',
 	lang: "en-US",
 	lastUpdated: true,
-	appearance: "force-dark",
-	ignoreDeadLinks: true,
-	base: '/opentelemet2ry-go/',
+	appearance: "dark",
+	base: '/opentelemetry-go/',
 	sitemap: {
 		hostname: 'https://foomo.github.io/opentelemetry-go',
 	},
@@ -17,35 +16,46 @@ export default defineConfig({
 		logo: '/logo.png',
 		outline: [2, 4],
 		nav: [
-			{ text: 'About', link: '/' },
+			{ text: 'Guide', link: '/guide/getting-started' },
 			{ text: 'API Reference', link: '/api/' },
+			{ text: 'Examples', link: '/examples/basic-tracing' },
 		],
 		sidebar: [
-			{ text: 'About', link: '/' },
-			{ text: 'Telemetry', link: '/telemetry' },
+			{
+				text: 'Guide',
+				items: [
+					{ text: 'Getting Started', link: '/guide/getting-started' },
+					{ text: 'Exporters', link: '/guide/exporters' },
+					{ text: 'Semantic Conventions', link: '/guide/semconv' },
+					{ text: 'Testing', link: '/guide/testing' },
+				],
+			},
 			{
 				text: 'API Reference',
 				items: [
-					{ text: 'Go', link: '/go' },
-					{ text: 'GoBackground', link: '/gobackground' },
+					{ text: 'Overview', link: '/api/' },
+					{ text: 'glossytrace', link: '/api/glossytrace' },
+					{ text: 'glossymetric', link: '/api/glossymetric' },
+					{ text: 'semconv', link: '/api/semconv' },
+					{ text: 'oteltesting', link: '/api/testing' },
+				],
+			},
+			{
+				text: 'Examples',
+				items: [
+					{ text: 'Basic Tracing', link: '/examples/basic-tracing' },
+					{ text: 'Basic Metrics', link: '/examples/basic-metrics' },
+					{ text: 'Testing', link: '/examples/testing-example' },
+					{ text: 'Custom Semconv', link: '/examples/custom-semconv' },
 				],
 			},
 			{
 				text: 'Contributing',
 				collapsed: true,
 				items: [
-					{
-						text: "Guideline",
-						link: '/CONTRIBUTING.md',
-					},
-					{
-						text: "Code of conduct",
-						link: '/CODE_OF_CONDUCT.md',
-					},
-					{
-						text: "Security guidelines",
-						link: '/SECURITY.md',
-					},
+					{ text: 'Guideline', link: '/CONTRIBUTING' },
+					{ text: 'Code of Conduct', link: '/CODE_OF_CONDUCT' },
+					{ text: 'Security', link: '/SECURITY' },
 				],
 			},
 		],
@@ -65,8 +75,8 @@ export default defineConfig({
 	markdown: {
 		// https://github.com/vuejs/vitepress/discussions/3724
 		theme: {
-			dark: 'github-dark',
-			light: 'github-light',
+			light: 'catppuccin-latte',
+			dark: 'catppuccin-frappe',
 		}
 	},
 	head: [

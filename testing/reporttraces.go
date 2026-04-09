@@ -28,7 +28,7 @@ func ReportTraces(tb testing.TB, exporter trace.SpanExporter) *trace.TracerProvi
 	)
 
 	tb.Cleanup(func() {
-		ctx, cancel := context.WithTimeout(context.WithoutCancel(tb.Context()), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
 		// if n > 0 {

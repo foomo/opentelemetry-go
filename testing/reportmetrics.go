@@ -68,7 +68,7 @@ func ReportMetrics(tb testing.TB, exporter metric.Exporter) *metric.MeterProvide
 	mp := metric.NewMeterProvider(metric.WithReader(reader))
 
 	tb.Cleanup(func() {
-		ctx, cancel := context.WithTimeout(context.WithoutCancel(tb.Context()), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
 		var rm metricdata.ResourceMetrics

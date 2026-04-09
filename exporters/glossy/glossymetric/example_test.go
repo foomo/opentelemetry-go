@@ -187,3 +187,79 @@ func Example() {
 	// Value: 32.400
 	// ──────────────────────────────────────────────────
 }
+
+func Example_withoutHistograms() {
+	os.Setenv("NO_COLOR", "1")
+
+	exporter, _ := glossymetric.New(
+		glossymetric.WithWriter(os.Stdout),
+		glossymetric.WithoutHistograms(),
+	)
+
+	mockData := metricdata.ResourceMetrics{
+		Resource: res,
+		ScopeMetrics: []metricdata.ScopeMetrics{
+			{
+				Scope: instrumentation.Scope{Name: "example"},
+				Metrics: []metricdata.Metrics{
+					{
+						Name:        "requests",
+						Description: "Number of requests",
+						Unit:        "1",
+						Data: metricdata.Sum[int64]{
+							IsMonotonic: true,
+							Temporality: metricdata.DeltaTemporality,
+							DataPoints: []metricdata.DataPoint[int64]{
+								{
+									Attributes: attribute.NewSet(attribute.String("method", "GET")),
+									StartTime:  now,
+									Time:       now.Add(1 * time.Second),
+									Value:      42,
+								},
+							},
+						},
+					},
+					{
+						Name:        "latency",
+						Description: "Request latency",
+						Unit:        "ms",
+						Data: metricdata.Histogram[float64]{
+							Temporality: metricdata.DeltaTemporality,
+							DataPoints: []metricdata.HistogramDataPoint[float64]{
+								{
+									Attributes:   attribute.NewSet(attribute.String("method", "GET")),
+									StartTime:    now,
+									Time:         now.Add(1 * time.Second),
+									Count:        10,
+									Bounds:       []float64{1, 5, 10},
+									BucketCounts: []uint64{1, 3, 6, 0},
+									Sum:          57,
+									Min:          metricdata.NewExtrema[float64](0.5),
+									Max:          metricdata.NewExtrema[float64](9.8),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_ = exporter.Export(context.Background(), &mockData)
+
+	// Output:
+	// METRICS
+	//
+	// Scope: example
+	// ──────────────────────────────────────────────────
+	// Metric: requests
+	// Description: Number of requests
+	// Unit: 1
+	//   attrs: method=GET
+	// Value: 42
+	// ──────────────────────────────────────────────────
+	// Metric: latency
+	// Description: Request latency
+	// Unit: ms
+	// ──────────────────────────────────────────────────
+}
