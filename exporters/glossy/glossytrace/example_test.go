@@ -104,6 +104,27 @@ func Example_attributes() {
 	//     http.target=/api/users
 }
 
+func Example_minDuration() {
+	_ = os.Setenv("NO_COLOR", "1")
+
+	exp, _ := glossytrace.New(
+		glossytrace.WithWriter(os.Stdout),
+		glossytrace.WithoutTimestamps(),
+		glossytrace.WithMinDuration(50*time.Millisecond),
+	)
+
+	spans := []sdktrace.ReadOnlySpan{
+		newExampleSpan("HTTP GET /api/users", rootSpan, trace.SpanID{}, now, now.Add(150*time.Millisecond), nil),
+		newExampleSpan("db.Query", childID, rootSpan, now.Add(10*time.Millisecond), now.Add(30*time.Millisecond), nil),
+	}
+
+	_ = exp.ExportSpans(context.Background(), spans)
+
+	// Output:
+	// === TRACE 0102030405060708090a0b0c0d0e0f10 ===
+	// └─ HTTP GET /api/users (150.00 ms)
+}
+
 func newExampleSpan(name string, spanID, parentID trace.SpanID, start, end time.Time, attrs []attribute.KeyValue) sdktrace.ReadOnlySpan {
 	stub := tracetest.SpanStub{
 		Name: name,

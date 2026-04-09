@@ -9,7 +9,7 @@ Thank you for your interest in contributing to our project! This guide will help
 3. Make your changes
 4. Check and fix code style and formatting issues: `make lint`
 5. Run checks: `make test`
-6. Build the project: `make build`
+6. Run all checks: `make check`
 7. Commit your changes using the conventions below
 8. Push your branch to your fork
 9. Open a pull request
@@ -26,6 +26,11 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) for clear
 - `perf:` Performance improvements
 - `test:` Adding or updating tests
 - `chore:` Maintenance tasks, dependencies, etc.
+- `build:` Build system or external dependency changes
+- `ci:` CI configuration changes
+- `sec:` Security fixes
+- `wip:` Work in progress
+- `revert:` Reverts a previous commit
 
 ## Pull Request Guidelines
 

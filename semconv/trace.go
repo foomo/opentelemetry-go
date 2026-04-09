@@ -11,12 +11,12 @@ const (
 	SpanIDKey = attribute.Key("span.id")
 )
 
-// TraceID returns a new attribute.KeyValue for tracking.id.
+// TraceID returns a new attribute.KeyValue for trace.id.
 func TraceID(v string) attribute.KeyValue {
 	return TraceIDKey.String(v)
 }
 
-// SpanID returns a new attribute.KeyValue for tracking.id.
+// SpanID returns a new attribute.KeyValue for span.id.
 func SpanID(v string) attribute.KeyValue {
 	return SpanIDKey.String(v)
 }

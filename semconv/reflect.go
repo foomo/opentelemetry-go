@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	// RefectTypeKey is the key for reflect.type.
-	RefectTypeKey = attribute.Key("reflect.type")
+	// ReflectTypeKey is the key for reflect.type.
+	ReflectTypeKey = attribute.Key("reflect.type")
 )
 
-func RefectType(v any) attribute.KeyValue {
-	return RefectTypeKey.String(reflect.TypeOf(v).String())
+// ReflectType returns a new attribute.KeyValue for reflect.type.
+func ReflectType(v any) attribute.KeyValue {
+	return ReflectTypeKey.String(reflect.TypeOf(v).String())
 }

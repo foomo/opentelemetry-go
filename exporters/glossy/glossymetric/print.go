@@ -8,6 +8,10 @@ import (
 )
 
 func (e *Exporter) prettyPrint(rm *metricdata.ResourceMetrics) error {
+	if rm == nil {
+		return nil
+	}
+
 	w := e.cfg.writer
 
 	if len(rm.ScopeMetrics) == 0 {
