@@ -37,7 +37,7 @@ go.work:
 
 .PHONY: check
 ## Run lint & tests
-check: tidy generate lint test
+check: tidy generate lint test audit
 
 .PHONY: tidy
 ## Run go mod tidy
@@ -87,9 +87,13 @@ test.bench: go.work
 
 ### Dependencies
 
+.PHONY: audit
+## Run security audit
+audit:
+	@echo "〉trivy scan"
+	@trivy fs . --format table --severity HIGH,CRITICAL
+
 .PHONY: outdated
-## Show outdated direct dependencies
-outdated:
 	@echo "〉go mod outdated"
 	@find . -name 'go.mod' -exec dirname {} \; | xargs -I {} sh -c 'cd {} && go list -u -m -json all' \; | go-mod-outdated -update -direct
 
@@ -136,7 +140,7 @@ godocs:
 .PHONY: help
 ## Show help text
 help:
-	@echo "Go\n"
+	@echo "opentelemetry-go\n"
 	@echo "Usage:\n  make [task]"
 	@awk '{ \
 		if($$0 ~ /^### /){ \
