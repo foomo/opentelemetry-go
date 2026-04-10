@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Exporter is a human-readable, styled trace exporter using lipgloss.
@@ -32,6 +33,9 @@ func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpa
 
 	traces := map[string][]sdktrace.ReadOnlySpan{}
 
+	// Build a span index for resolving link names.
+	spanIndex := map[string]sdktrace.ReadOnlySpan{}
+
 	for _, s := range spans {
 		d := s.EndTime().Sub(s.StartTime())
 		if e.cfg.minDuration > 0 && d < e.cfg.minDuration {
@@ -40,10 +44,12 @@ func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpa
 
 		traceID := s.SpanContext().TraceID().String()
 		traces[traceID] = append(traces[traceID], s)
+		spanIndex[spanKey(s.SpanContext())] = s
 	}
 
 	// Sort trace IDs for deterministic output.
 	traceIDs := make([]string, 0, len(traces))
+
 	for id := range traces {
 		traceIDs = append(traceIDs, id)
 	}
@@ -51,7 +57,7 @@ func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpa
 	sort.Strings(traceIDs)
 
 	for _, id := range traceIDs {
-		e.printTrace(id, traces[id])
+		e.printTrace(id, traces[id], spanIndex)
 	}
 
 	return nil
@@ -60,4 +66,9 @@ func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpa
 // Shutdown shuts down the exporter.
 func (e *Exporter) Shutdown(_ context.Context) error {
 	return nil
+}
+
+// spanKey returns a unique key for a span context as "traceID:spanID".
+func spanKey(sc trace.SpanContext) string {
+	return sc.TraceID().String() + ":" + sc.SpanID().String()
 }

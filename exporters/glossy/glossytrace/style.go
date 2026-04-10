@@ -21,6 +21,9 @@ var (
 	styleTimestamp = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 	styleFlameBar  = lipgloss.NewStyle().Foreground(lipgloss.Color("208"))
 
+	styleLinkPrefix = lipgloss.NewStyle().Foreground(lipgloss.Color("6"))
+	styleLinkRef    = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
+
 	styleDurationFast = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
 	styleDurationWarn = lipgloss.NewStyle().Foreground(lipgloss.Color("11"))
 	styleDurationSlow = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))

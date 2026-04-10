@@ -87,8 +87,8 @@ Output:
 
 ```
 === TRACE 0102030405060708090a0b0c0d0e0f10 ===
-└─ HTTP GET /api/users (150.00 ms)
-  └─ db.Query (40.00 ms)
+└─ HTTP GET /api/users (150.00 ms) (0102030405060708090a0b0c0d0e0f10:0102030405060708)
+  └─ db.Query (40.00 ms) (0102030405060708090a0b0c0d0e0f10:1112131415161718)
 
 Nested Flamegraph:
 HTTP GET /api/users ██████████████████████████████ 150.00 ms
