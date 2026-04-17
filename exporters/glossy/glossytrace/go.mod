@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	charm.land/lipgloss/v2 v2.0.3
-	github.com/foomo/go v0.9.0
+	github.com/foomo/go v0.10.0
 	go.opentelemetry.io/otel v1.43.0
 	go.opentelemetry.io/otel/sdk v1.43.0
 	go.opentelemetry.io/otel/trace v1.43.0
