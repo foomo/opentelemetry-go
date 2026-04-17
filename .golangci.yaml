@@ -11,6 +11,7 @@ linters:
   default: all
   disable:
     # Project specific linters
+    - goconst
     - tparallel
     - paralleltest
     # Discouraged linters
