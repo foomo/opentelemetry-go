@@ -85,15 +85,18 @@ func NewClientDisconnects(
 	if m == nil {
 		return ClientDisconnects{noop.Int64Counter{}}, nil
 	}
+
 	if len(opt) == 0 {
 		opt = newClientDisconnectsOpts
 	} else {
 		opt = append(opt, newClientDisconnectsOpts...)
 	}
+
 	i, err := m.Int64Counter("nats.client.disconnects", opt...)
 	if err != nil {
 		return ClientDisconnects{noop.Int64Counter{}}, err
 	}
+
 	return ClientDisconnects{i}, nil
 }
 
@@ -123,17 +126,22 @@ func (m ClientDisconnects) Add(
 	serverAddress string,
 	attrs ...attribute.KeyValue,
 ) {
-	if !m.Int64Counter.Enabled(ctx) {
+	if !m.Enabled(ctx) {
 		return
 	}
+
 	if len(attrs) == 0 {
 		m.Int64Counter.Add(ctx, incr, metric.WithAttributes(
 			attribute.String("server.address", serverAddress),
 		))
+
 		return
 	}
-	o := addOptPool.Get().(*[]metric.AddOption)
+
+	o := addOptPool.Get().(*[]metric.AddOption) //nolint:forcetypeassert
+
 	defer func() { *o = (*o)[:0]; addOptPool.Put(o) }()
+
 	*o = append(*o, metric.WithAttributes(
 		append(attrs[:len(attrs):len(attrs)],
 			attribute.String("server.address", serverAddress),
@@ -144,15 +152,19 @@ func (m ClientDisconnects) Add(
 
 // AddSet adds incr to the existing count for set.
 func (m ClientDisconnects) AddSet(ctx context.Context, incr int64, set attribute.Set) {
-	if !m.Int64Counter.Enabled(ctx) {
+	if !m.Enabled(ctx) {
 		return
 	}
+
 	if set.Len() == 0 {
 		m.Int64Counter.Add(ctx, incr)
 		return
 	}
-	o := addOptPool.Get().(*[]metric.AddOption)
+
+	o := addOptPool.Get().(*[]metric.AddOption) //nolint:forcetypeassert
+
 	defer func() { *o = (*o)[:0]; addOptPool.Put(o) }()
+
 	*o = append(*o, metric.WithAttributeSet(set))
 	m.Int64Counter.Add(ctx, incr, *o...)
 }
@@ -194,15 +206,18 @@ func NewClientReconnects(
 	if m == nil {
 		return ClientReconnects{noop.Int64Counter{}}, nil
 	}
+
 	if len(opt) == 0 {
 		opt = newClientReconnectsOpts
 	} else {
 		opt = append(opt, newClientReconnectsOpts...)
 	}
+
 	i, err := m.Int64Counter("nats.client.reconnects", opt...)
 	if err != nil {
 		return ClientReconnects{noop.Int64Counter{}}, err
 	}
+
 	return ClientReconnects{i}, nil
 }
 
@@ -222,17 +237,22 @@ func (m ClientReconnects) Add(
 	serverAddress string,
 	attrs ...attribute.KeyValue,
 ) {
-	if !m.Int64Counter.Enabled(ctx) {
+	if !m.Enabled(ctx) {
 		return
 	}
+
 	if len(attrs) == 0 {
 		m.Int64Counter.Add(ctx, incr, metric.WithAttributes(
 			attribute.String("server.address", serverAddress),
 		))
+
 		return
 	}
-	o := addOptPool.Get().(*[]metric.AddOption)
+
+	o := addOptPool.Get().(*[]metric.AddOption) //nolint:forcetypeassert
+
 	defer func() { *o = (*o)[:0]; addOptPool.Put(o) }()
+
 	*o = append(*o, metric.WithAttributes(
 		append(attrs[:len(attrs):len(attrs)],
 			attribute.String("server.address", serverAddress),
@@ -242,15 +262,19 @@ func (m ClientReconnects) Add(
 }
 
 func (m ClientReconnects) AddSet(ctx context.Context, incr int64, set attribute.Set) {
-	if !m.Int64Counter.Enabled(ctx) {
+	if !m.Enabled(ctx) {
 		return
 	}
+
 	if set.Len() == 0 {
 		m.Int64Counter.Add(ctx, incr)
 		return
 	}
-	o := addOptPool.Get().(*[]metric.AddOption)
+
+	o := addOptPool.Get().(*[]metric.AddOption) //nolint:forcetypeassert
+
 	defer func() { *o = (*o)[:0]; addOptPool.Put(o) }()
+
 	*o = append(*o, metric.WithAttributeSet(set))
 	m.Int64Counter.Add(ctx, incr, *o...)
 }
@@ -287,15 +311,18 @@ func NewClientAsyncErrors(
 	if m == nil {
 		return ClientAsyncErrors{noop.Int64Counter{}}, nil
 	}
+
 	if len(opt) == 0 {
 		opt = newClientAsyncErrorsOpts
 	} else {
 		opt = append(opt, newClientAsyncErrorsOpts...)
 	}
+
 	i, err := m.Int64Counter("nats.client.async_errors", opt...)
 	if err != nil {
 		return ClientAsyncErrors{noop.Int64Counter{}}, err
 	}
+
 	return ClientAsyncErrors{i}, nil
 }
 
@@ -315,17 +342,22 @@ func (m ClientAsyncErrors) Add(
 	kind AsyncErrorKindAttr,
 	attrs ...attribute.KeyValue,
 ) {
-	if !m.Int64Counter.Enabled(ctx) {
+	if !m.Enabled(ctx) {
 		return
 	}
+
 	if len(attrs) == 0 {
 		m.Int64Counter.Add(ctx, incr, metric.WithAttributes(
 			attribute.String("nats.client.error.kind", string(kind)),
 		))
+
 		return
 	}
-	o := addOptPool.Get().(*[]metric.AddOption)
+
+	o := addOptPool.Get().(*[]metric.AddOption) //nolint:forcetypeassert
+
 	defer func() { *o = (*o)[:0]; addOptPool.Put(o) }()
+
 	*o = append(*o, metric.WithAttributes(
 		append(attrs[:len(attrs):len(attrs)],
 			attribute.String("nats.client.error.kind", string(kind)),
@@ -335,15 +367,19 @@ func (m ClientAsyncErrors) Add(
 }
 
 func (m ClientAsyncErrors) AddSet(ctx context.Context, incr int64, set attribute.Set) {
-	if !m.Int64Counter.Enabled(ctx) {
+	if !m.Enabled(ctx) {
 		return
 	}
+
 	if set.Len() == 0 {
 		m.Int64Counter.Add(ctx, incr)
 		return
 	}
-	o := addOptPool.Get().(*[]metric.AddOption)
+
+	o := addOptPool.Get().(*[]metric.AddOption) //nolint:forcetypeassert
+
 	defer func() { *o = (*o)[:0]; addOptPool.Put(o) }()
+
 	*o = append(*o, metric.WithAttributeSet(set))
 	m.Int64Counter.Add(ctx, incr, *o...)
 }
@@ -388,15 +424,18 @@ func NewJetStreamConsumerPending(
 	if m == nil {
 		return JetStreamConsumerPending{noop.Int64ObservableGauge{}}, nil
 	}
+
 	if len(opt) == 0 {
 		opt = newJetStreamConsumerPendingOpts
 	} else {
 		opt = append(opt, newJetStreamConsumerPendingOpts...)
 	}
+
 	i, err := m.Int64ObservableGauge("nats.jetstream.consumer.pending", opt...)
 	if err != nil {
 		return JetStreamConsumerPending{noop.Int64ObservableGauge{}}, err
 	}
+
 	return JetStreamConsumerPending{i}, nil
 }
 
@@ -428,8 +467,10 @@ func (m JetStreamConsumerPending) Observe(
 			attribute.String("messaging.nats.stream", stream),
 			attribute.String("messaging.consumer.group.name", consumerGroupName),
 		))
+
 		return
 	}
+
 	o.Observe(val, metric.WithAttributes(
 		append(attrs[:len(attrs):len(attrs)],
 			attribute.String("messaging.nats.stream", stream),
@@ -469,15 +510,18 @@ func NewJetStreamConsumerAckPending(
 	if m == nil {
 		return JetStreamConsumerAckPending{noop.Int64ObservableGauge{}}, nil
 	}
+
 	if len(opt) == 0 {
 		opt = newJetStreamConsumerAckPendingOpts
 	} else {
 		opt = append(opt, newJetStreamConsumerAckPendingOpts...)
 	}
+
 	i, err := m.Int64ObservableGauge("nats.jetstream.consumer.ack_pending", opt...)
 	if err != nil {
 		return JetStreamConsumerAckPending{noop.Int64ObservableGauge{}}, err
 	}
+
 	return JetStreamConsumerAckPending{i}, nil
 }
 
@@ -502,8 +546,10 @@ func (m JetStreamConsumerAckPending) Observe(
 			attribute.String("messaging.nats.stream", stream),
 			attribute.String("messaging.consumer.group.name", consumerGroupName),
 		))
+
 		return
 	}
+
 	o.Observe(val, metric.WithAttributes(
 		append(attrs[:len(attrs):len(attrs)],
 			attribute.String("messaging.nats.stream", stream),
@@ -538,15 +584,18 @@ func NewJetStreamConsumerRedelivered(
 	if m == nil {
 		return JetStreamConsumerRedelivered{noop.Int64ObservableCounter{}}, nil
 	}
+
 	if len(opt) == 0 {
 		opt = newJetStreamConsumerRedeliveredOpts
 	} else {
 		opt = append(opt, newJetStreamConsumerRedeliveredOpts...)
 	}
+
 	i, err := m.Int64ObservableCounter("nats.jetstream.consumer.redelivered", opt...)
 	if err != nil {
 		return JetStreamConsumerRedelivered{noop.Int64ObservableCounter{}}, err
 	}
+
 	return JetStreamConsumerRedelivered{i}, nil
 }
 
@@ -571,8 +620,10 @@ func (m JetStreamConsumerRedelivered) Observe(
 			attribute.String("messaging.nats.stream", stream),
 			attribute.String("messaging.consumer.group.name", consumerGroupName),
 		))
+
 		return
 	}
+
 	o.Observe(val, metric.WithAttributes(
 		append(attrs[:len(attrs):len(attrs)],
 			attribute.String("messaging.nats.stream", stream),
