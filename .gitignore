@@ -11,6 +11,7 @@
 
 ## Git
 !.gitignore
+!.gitattributes
 !.gitkeep
 
 ## GitHub
