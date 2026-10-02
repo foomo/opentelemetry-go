@@ -25,12 +25,6 @@
 ## Lefthook
 !.lefthook.yaml
 
-## VSCode
-!.vscode/
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.default.json
-
 ## Editorconfig
 !.editorconfig
 
@@ -41,7 +35,6 @@ go.work.sum
 !.goreleaser.yaml
 
 ## Node ##
-!.npmrc
 **/node_modules/
 
 ## TypeScript
