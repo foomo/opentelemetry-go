@@ -17,7 +17,7 @@ func printAttrs(attrs attribute.Set, w io.Writer) {
 	parts := make([]string, len(kvs))
 	for i, a := range kvs {
 		key := renderStyled(styleAttrKey, string(a.Key))
-		val := renderStyled(styleAttrVal, a.Value.Emit())
+		val := renderStyled(styleAttrVal, a.Value.String())
 		parts[i] = fmt.Sprintf("%s=%s", key, val)
 	}
 
