@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://json.schemastore.org/dependabot-2.0.json
+version: 2
+
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+updates:
+  - package-ecosystem: github-actions
+    commit-message: { prefix: sec(gha) }
+    open-pull-requests-limit: 0
+    directory: '/'
+    schedule:
+      interval: daily
+      timezone: Europe/Berlin
+    groups:
+      security:
+        applies-to: security-updates
+        group-by: dependency-name
+        patterns: ['*']
+
+  - package-ecosystem: gomod
+    commit-message: { prefix: sec(gomod) }
+    open-pull-requests-limit: 0
+    directories: ['**/*']
+    schedule:
+      interval: daily
+      timezone: Europe/Berlin
+    groups:
+      security:
+        applies-to: security-updates
+        group-by: dependency-name
+        patterns: ['*']
+
+  - package-ecosystem: gomod
+    commit-message: { prefix: chore(gomod) }
+    open-pull-requests-limit: 1
+    directories: ['**/*']
+    target-branch: main
+    schedule:
+      interval: daily
+      timezone: Europe/Berlin
+    groups:
+      dependencies:
+        applies-to: version-updates
+        patterns: ['*']
+    cooldown:
+      default-days: 7
+
+  - package-ecosystem: npm
+    commit-message: { prefix: sec(npm) }
+    open-pull-requests-limit: 0
+    directory: '/docs'
+    schedule:
+      interval: daily
+      timezone: Europe/Berlin
+    groups:
+      security:
+        applies-to: security-updates
+        group-by: dependency-name
+        patterns: ['*']

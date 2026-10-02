@@ -10,19 +10,25 @@ import (
 )
 
 // Exporter is a human-readable, styled trace exporter using lipgloss.
+// It implements [sdktrace.SpanExporter] and is safe for concurrent use.
+// The zero value is not usable; create one with [New].
 type Exporter struct {
 	cfg config
 	mu  sync.Mutex
 }
 
-// New creates a new glossy trace exporter.
+// New returns a new Exporter configured by options. It writes to os.Stdout
+// unless [WithWriter] is given. The returned error is always nil.
 func New(options ...Option) (*Exporter, error) {
 	return &Exporter{
 		cfg: newConfig(options),
 	}, nil
 }
 
-// ExportSpans exports a batch of spans in a human-readable format.
+// ExportSpans writes spans to the configured writer as one tree per trace,
+// ordered by trace ID. Spans shorter than the [WithMinDuration] threshold are
+// skipped. It returns ctx.Err() without writing if ctx is already done. Write
+// errors are ignored.
 func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpan) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -63,7 +69,8 @@ func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpa
 	return nil
 }
 
-// Shutdown shuts down the exporter.
+// Shutdown is a no-op; the exporter holds no resources and keeps accepting
+// exports afterwards. It always returns nil.
 func (e *Exporter) Shutdown(_ context.Context) error {
 	return nil
 }

@@ -8,12 +8,16 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 )
 
-// ReportTraces configures a trace provider for collecting and reporting spans, with cleanup on test completion.
+// ReportTraces returns a TracerProvider that buffers all ended spans. When the
+// test finishes, a tb.Cleanup hook shuts down the provider, which exports the
+// buffered spans to exporter. Shutdown errors are reported with tb.Fatal.
 //
-//		func TestWithTrace(t *testing.T) {
-//	    exporter := glossytrace.NewTest(t, glossytrace.WithFlamegraph(), glossytrace.WithSpanAttributes())
-//		  tp := testingx.ReportTraces(t, exporter)
-//		}
+//	func TestWithTrace(t *testing.T) {
+//		exporter := glossytrace.NewTest(t, glossytrace.WithFlamegraph(), glossytrace.WithSpanAttributes())
+//		tp := oteltesting.ReportTraces(t, exporter)
+//		_, span := tp.Tracer("test").Start(t.Context(), "op")
+//		span.End()
+//	}
 func ReportTraces(tb testing.TB, exporter trace.SpanExporter) *trace.TracerProvider {
 	tb.Helper()
 

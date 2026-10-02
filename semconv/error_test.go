@@ -9,6 +9,14 @@ import (
 	"github.com/foomo/opentelemetry-go/semconv"
 )
 
+func ExampleErrorType() {
+	err := fmt.Errorf("fetch user: %w", context.DeadlineExceeded)
+
+	kv := semconv.ErrorType(err)
+	fmt.Println(kv.Key, kv.Value.AsString())
+	// Output: error.type context.DeadlineExceeded
+}
+
 func TestErrorType(t *testing.T) {
 	t.Parallel()
 

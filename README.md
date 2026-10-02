@@ -1,6 +1,9 @@
-[![Build Status](https://github.com/foomo/opentelemetry-go/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/foomo/opentelemetry-go/actions/workflows/test.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/foomo/opentelemetry-go)](https://goreportcard.com/report/github.com/foomo/opentelemetry-go)
+[![CodeQL](https://github.com/foomo/opentelemetry-go/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/foomo/opentelemetry-go/actions/workflows/github-code-scanning/codeql)
+[![Coverage](https://img.shields.io/codecov/c/github/foomo/opentelemetry-go?style=flat-square&logo=github)](https://app.codecov.io/gh/foomo/opentelemetry-go)
 [![GoDoc](https://godoc.org/github.com/foomo/opentelemetry-go?status.svg)](https://godoc.org/github.com/foomo/opentelemetry-go)
+[![GitHub Stars](https://img.shields.io/github/stars/foomo/opentelemetry-go.svg?style=flat-square&logo=github)](https://github.com/foomo/opentelemetry-go)
+
+
 
 <p align="center">
   <img alt="opentelemetry-go" src="docs/public/logo.png" width="400" height="400"/>

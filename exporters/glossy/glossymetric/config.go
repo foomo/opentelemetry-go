@@ -48,7 +48,8 @@ func WithWriter(w io.Writer) Option {
 	})
 }
 
-// WithoutHistograms disables histogram detail printing.
+// WithoutHistograms disables printing of histogram data points. Histogram
+// metrics still print their name, description and unit.
 func WithoutHistograms() Option {
 	return optionFunc(func(cfg config) config {
 		cfg.histograms = false
@@ -56,7 +57,8 @@ func WithoutHistograms() Option {
 	})
 }
 
-// WithTemporalitySelector sets the temporality selector.
+// WithTemporalitySelector sets the selector used by [Exporter.Temporality].
+// Default is cumulative temporality for all instrument kinds.
 func WithTemporalitySelector(fn sdkmetric.TemporalitySelector) Option {
 	return optionFunc(func(cfg config) config {
 		cfg.temporalitySelector = fn
@@ -64,7 +66,8 @@ func WithTemporalitySelector(fn sdkmetric.TemporalitySelector) Option {
 	})
 }
 
-// WithAggregationSelector sets the aggregation selector.
+// WithAggregationSelector sets the selector used by [Exporter.Aggregation].
+// Default is [sdkmetric.DefaultAggregationSelector].
 func WithAggregationSelector(fn sdkmetric.AggregationSelector) Option {
 	return optionFunc(func(cfg config) config {
 		cfg.aggregationSelector = fn

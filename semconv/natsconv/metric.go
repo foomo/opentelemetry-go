@@ -1,8 +1,3 @@
-// Package natsconv provides types and functionality for NATS-specific metrics
-// following the OpenTelemetry semantic conventions pattern in the "nats" and
-// "messaging.nats" namespaces. This package extends messagingconv with
-// NATS-specific instruments (JetStream consumer state, core connection health)
-// that are not covered by the generic messaging semantic conventions.
 package natsconv
 
 import (
@@ -225,9 +220,16 @@ func NewClientReconnects(
 	return ClientReconnects{i}, nil
 }
 
+// Inst returns the underlying metric instrument.
 func (m ClientReconnects) Inst() metric.Int64Counter { return m.Int64Counter }
-func (ClientReconnects) Name() string                { return "nats.client.reconnects" }
-func (ClientReconnects) Unit() string                { return "{event}" }
+
+// Name returns the semantic convention name of the instrument.
+func (ClientReconnects) Name() string { return "nats.client.reconnects" }
+
+// Unit returns the semantic convention unit of the instrument.
+func (ClientReconnects) Unit() string { return "{event}" }
+
+// Description returns the semantic convention description of the instrument.
 func (ClientReconnects) Description() string {
 	return "Number of successful reconnects performed by the NATS client."
 }
@@ -235,6 +237,8 @@ func (ClientReconnects) Description() string {
 // Add adds incr to the existing count for attrs.
 //
 // The serverAddress is the server the client reconnected to.
+//
+// All additional attrs passed are included in the recorded value.
 func (m ClientReconnects) Add(
 	ctx context.Context,
 	incr int64,
@@ -265,6 +269,7 @@ func (m ClientReconnects) Add(
 	m.Int64Counter.Add(ctx, incr, *o...)
 }
 
+// AddSet adds incr to the existing count for set.
 func (m ClientReconnects) AddSet(ctx context.Context, incr int64, set attribute.Set) {
 	if !m.Enabled(ctx) {
 		return
@@ -283,10 +288,15 @@ func (m ClientReconnects) AddSet(ctx context.Context, incr int64, set attribute.
 	m.Int64Counter.Add(ctx, incr, *o...)
 }
 
+// AttrServerPort returns an optional attribute for the "server.port" semantic
+// convention.
 func (ClientReconnects) AttrServerPort(val int) attribute.KeyValue {
 	return otelsemconv.ServerPort(val)
 }
 
+// AttrClientName returns an optional attribute for the "nats.client.name"
+// semantic convention. It represents the client name registered via
+// nats.Name(...) on Connect.
 func (ClientReconnects) AttrClientName(val string) attribute.KeyValue {
 	return semconv.NATSClientName(val)
 }
@@ -331,9 +341,16 @@ func NewClientAsyncErrors(
 	return ClientAsyncErrors{i}, nil
 }
 
+// Inst returns the underlying metric instrument.
 func (m ClientAsyncErrors) Inst() metric.Int64Counter { return m.Int64Counter }
-func (ClientAsyncErrors) Name() string                { return "nats.client.async_errors" }
-func (ClientAsyncErrors) Unit() string                { return "{error}" }
+
+// Name returns the semantic convention name of the instrument.
+func (ClientAsyncErrors) Name() string { return "nats.client.async_errors" }
+
+// Unit returns the semantic convention unit of the instrument.
+func (ClientAsyncErrors) Unit() string { return "{error}" }
+
+// Description returns the semantic convention description of the instrument.
 func (ClientAsyncErrors) Description() string {
 	return "Number of asynchronous errors reported by the NATS client."
 }
@@ -341,6 +358,8 @@ func (ClientAsyncErrors) Description() string {
 // Add adds incr to the existing count for attrs.
 //
 // The kind is a low-cardinality classification of the error.
+//
+// All additional attrs passed are included in the recorded value.
 func (m ClientAsyncErrors) Add(
 	ctx context.Context,
 	incr int64,
@@ -371,6 +390,7 @@ func (m ClientAsyncErrors) Add(
 	m.Int64Counter.Add(ctx, incr, *o...)
 }
 
+// AddSet adds incr to the existing count for set.
 func (m ClientAsyncErrors) AddSet(ctx context.Context, incr int64, set attribute.Set) {
 	if !m.Enabled(ctx) {
 		return
@@ -444,11 +464,18 @@ func NewJetStreamConsumerPending(
 	return JetStreamConsumerPending{i}, nil
 }
 
+// Inst returns the underlying metric instrument.
 func (m JetStreamConsumerPending) Inst() metric.Int64ObservableGauge {
 	return m.Int64ObservableGauge
 }
+
+// Name returns the semantic convention name of the instrument.
 func (JetStreamConsumerPending) Name() string { return "nats.jetstream.consumer.pending" }
+
+// Unit returns the semantic convention unit of the instrument.
 func (JetStreamConsumerPending) Unit() string { return "{message}" }
+
+// Description returns the semantic convention description of the instrument.
 func (JetStreamConsumerPending) Description() string {
 	return "Messages in the stream not yet delivered to the consumer."
 }
@@ -460,6 +487,8 @@ func (JetStreamConsumerPending) Description() string {
 //
 // The consumerGroupName is the durable consumer name (conforms to
 // messaging.consumer.group.name).
+//
+// All additional attrs passed are included in the recorded value.
 func (m JetStreamConsumerPending) Observe(
 	o metric.Int64Observer,
 	val int64,
@@ -489,6 +518,8 @@ func (m JetStreamConsumerPending) ObserveSet(o metric.Int64Observer, val int64, 
 	o.Observe(val, metric.WithAttributeSet(set))
 }
 
+// AttrServerAddress returns an optional attribute for the "server.address"
+// semantic convention.
 func (JetStreamConsumerPending) AttrServerAddress(val string) attribute.KeyValue {
 	return otelsemconv.ServerAddress(val)
 }
@@ -497,8 +528,10 @@ func (JetStreamConsumerPending) AttrServerAddress(val string) attribute.KeyValue
 // JetStreamConsumerAckPending — nats.jetstream.consumer.ack_pending
 // -----------------------------------------------------------------------------
 
-// JetStreamConsumerAckPending represents the number of messages that have been
-// delivered but not yet acknowledged.
+// JetStreamConsumerAckPending is an instrument used to record metric values
+// conforming to the "nats.jetstream.consumer.ack_pending" semantic conventions.
+// It represents the number of messages that have been delivered to the consumer
+// but not yet acknowledged.
 type JetStreamConsumerAckPending struct {
 	metric.Int64ObservableGauge
 }
@@ -508,6 +541,9 @@ var newJetStreamConsumerAckPendingOpts = []metric.Int64ObservableGaugeOption{
 	metric.WithUnit("{message}"),
 }
 
+// NewJetStreamConsumerAckPending returns a new JetStreamConsumerAckPending
+// instrument. The caller is responsible for registering a callback with the
+// meter that observes this instrument.
 func NewJetStreamConsumerAckPending(
 	m metric.Meter,
 	opt ...metric.Int64ObservableGaugeOption,
@@ -530,15 +566,31 @@ func NewJetStreamConsumerAckPending(
 	return JetStreamConsumerAckPending{i}, nil
 }
 
+// Inst returns the underlying metric instrument.
 func (m JetStreamConsumerAckPending) Inst() metric.Int64ObservableGauge {
 	return m.Int64ObservableGauge
 }
+
+// Name returns the semantic convention name of the instrument.
 func (JetStreamConsumerAckPending) Name() string { return "nats.jetstream.consumer.ack_pending" }
+
+// Unit returns the semantic convention unit of the instrument.
 func (JetStreamConsumerAckPending) Unit() string { return "{message}" }
+
+// Description returns the semantic convention description of the instrument.
 func (JetStreamConsumerAckPending) Description() string {
 	return "Messages delivered to the consumer but not yet acknowledged."
 }
 
+// Observe records val for the given stream and consumer within an async
+// callback registered with the meter.
+//
+// The stream is the JetStream stream name.
+//
+// The consumerGroupName is the durable consumer name (conforms to
+// messaging.consumer.group.name).
+//
+// All additional attrs passed are included in the recorded value.
 func (m JetStreamConsumerAckPending) Observe(
 	o metric.Int64Observer,
 	val int64,
@@ -563,6 +615,7 @@ func (m JetStreamConsumerAckPending) Observe(
 	))
 }
 
+// ObserveSet observes val for set within an async callback.
 func (m JetStreamConsumerAckPending) ObserveSet(o metric.Int64Observer, val int64, set attribute.Set) {
 	o.Observe(val, metric.WithAttributeSet(set))
 }
@@ -571,8 +624,9 @@ func (m JetStreamConsumerAckPending) ObserveSet(o metric.Int64Observer, val int6
 // JetStreamConsumerRedelivered — nats.jetstream.consumer.redelivered
 // -----------------------------------------------------------------------------
 
-// JetStreamConsumerRedelivered represents the total number of messages
-// redelivered to the consumer.
+// JetStreamConsumerRedelivered is an instrument used to record metric values
+// conforming to the "nats.jetstream.consumer.redelivered" semantic conventions.
+// It represents the total number of messages redelivered to the consumer.
 type JetStreamConsumerRedelivered struct {
 	metric.Int64ObservableCounter
 }
@@ -582,6 +636,9 @@ var newJetStreamConsumerRedeliveredOpts = []metric.Int64ObservableCounterOption{
 	metric.WithUnit("{message}"),
 }
 
+// NewJetStreamConsumerRedelivered returns a new JetStreamConsumerRedelivered
+// instrument. The caller is responsible for registering a callback with the
+// meter that observes this instrument.
 func NewJetStreamConsumerRedelivered(
 	m metric.Meter,
 	opt ...metric.Int64ObservableCounterOption,
@@ -604,15 +661,31 @@ func NewJetStreamConsumerRedelivered(
 	return JetStreamConsumerRedelivered{i}, nil
 }
 
+// Inst returns the underlying metric instrument.
 func (m JetStreamConsumerRedelivered) Inst() metric.Int64ObservableCounter {
 	return m.Int64ObservableCounter
 }
+
+// Name returns the semantic convention name of the instrument.
 func (JetStreamConsumerRedelivered) Name() string { return "nats.jetstream.consumer.redelivered" }
+
+// Unit returns the semantic convention unit of the instrument.
 func (JetStreamConsumerRedelivered) Unit() string { return "{message}" }
+
+// Description returns the semantic convention description of the instrument.
 func (JetStreamConsumerRedelivered) Description() string {
 	return "Messages that have been redelivered to the consumer."
 }
 
+// Observe records the cumulative val for the given stream and consumer within
+// an async callback registered with the meter.
+//
+// The stream is the JetStream stream name.
+//
+// The consumerGroupName is the durable consumer name (conforms to
+// messaging.consumer.group.name).
+//
+// All additional attrs passed are included in the recorded value.
 func (m JetStreamConsumerRedelivered) Observe(
 	o metric.Int64Observer,
 	val int64,
@@ -637,6 +710,7 @@ func (m JetStreamConsumerRedelivered) Observe(
 	))
 }
 
+// ObserveSet observes val for set within an async callback.
 func (m JetStreamConsumerRedelivered) ObserveSet(o metric.Int64Observer, val int64, set attribute.Set) {
 	o.Observe(val, metric.WithAttributeSet(set))
 }

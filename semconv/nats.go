@@ -5,6 +5,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.43.0"
 )
 
+// MessagingSystemNats is the messaging.system attribute for NATS.
 var MessagingSystemNats = semconv.MessagingSystemKey.String("nats")
 
 const (
