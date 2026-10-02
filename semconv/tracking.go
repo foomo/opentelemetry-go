@@ -5,7 +5,8 @@ import (
 )
 
 const (
-	// TrackingIDKey is the key for tracking.id.
+	// TrackingIDKey is the key for tracking.id. Its values are unbounded: use
+	// it on spans and logs only, never on metrics.
 	TrackingIDKey = attribute.Key("tracking.id")
 )
 
