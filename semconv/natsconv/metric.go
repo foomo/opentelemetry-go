@@ -7,11 +7,15 @@ package natsconv
 
 import (
 	"context"
+	"slices"
 	"sync"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/noop"
+	otelsemconv "go.opentelemetry.io/otel/semconv/v1.43.0"
+
+	"github.com/foomo/opentelemetry-go/semconv"
 )
 
 var (
@@ -132,7 +136,7 @@ func (m ClientDisconnects) Add(
 
 	if len(attrs) == 0 {
 		m.Int64Counter.Add(ctx, incr, metric.WithAttributes(
-			attribute.String("server.address", serverAddress),
+			otelsemconv.ServerAddress(serverAddress),
 		))
 
 		return
@@ -143,8 +147,8 @@ func (m ClientDisconnects) Add(
 	defer func() { *o = (*o)[:0]; addOptPool.Put(o) }()
 
 	*o = append(*o, metric.WithAttributes(
-		append(attrs[:len(attrs):len(attrs)],
-			attribute.String("server.address", serverAddress),
+		append(slices.Clip(attrs),
+			otelsemconv.ServerAddress(serverAddress),
 		)...,
 	))
 	m.Int64Counter.Add(ctx, incr, *o...)
@@ -172,14 +176,14 @@ func (m ClientDisconnects) AddSet(ctx context.Context, incr int64, set attribute
 // AttrServerPort returns an optional attribute for the "server.port" semantic
 // convention.
 func (ClientDisconnects) AttrServerPort(val int) attribute.KeyValue {
-	return attribute.Int("server.port", val)
+	return otelsemconv.ServerPort(val)
 }
 
 // AttrClientName returns an optional attribute for the "nats.client.name"
 // semantic convention. It represents the client name registered via
 // nats.Name(...) on Connect.
 func (ClientDisconnects) AttrClientName(val string) attribute.KeyValue {
-	return attribute.String("nats.client.name", val)
+	return semconv.NATSClientName(val)
 }
 
 // -----------------------------------------------------------------------------
@@ -243,7 +247,7 @@ func (m ClientReconnects) Add(
 
 	if len(attrs) == 0 {
 		m.Int64Counter.Add(ctx, incr, metric.WithAttributes(
-			attribute.String("server.address", serverAddress),
+			otelsemconv.ServerAddress(serverAddress),
 		))
 
 		return
@@ -254,8 +258,8 @@ func (m ClientReconnects) Add(
 	defer func() { *o = (*o)[:0]; addOptPool.Put(o) }()
 
 	*o = append(*o, metric.WithAttributes(
-		append(attrs[:len(attrs):len(attrs)],
-			attribute.String("server.address", serverAddress),
+		append(slices.Clip(attrs),
+			otelsemconv.ServerAddress(serverAddress),
 		)...,
 	))
 	m.Int64Counter.Add(ctx, incr, *o...)
@@ -280,10 +284,11 @@ func (m ClientReconnects) AddSet(ctx context.Context, incr int64, set attribute.
 }
 
 func (ClientReconnects) AttrServerPort(val int) attribute.KeyValue {
-	return attribute.Int("server.port", val)
+	return otelsemconv.ServerPort(val)
 }
+
 func (ClientReconnects) AttrClientName(val string) attribute.KeyValue {
-	return attribute.String("nats.client.name", val)
+	return semconv.NATSClientName(val)
 }
 
 // -----------------------------------------------------------------------------
@@ -348,7 +353,7 @@ func (m ClientAsyncErrors) Add(
 
 	if len(attrs) == 0 {
 		m.Int64Counter.Add(ctx, incr, metric.WithAttributes(
-			attribute.String("nats.client.error.kind", string(kind)),
+			semconv.NATSClientErrorKind(string(kind)),
 		))
 
 		return
@@ -359,8 +364,8 @@ func (m ClientAsyncErrors) Add(
 	defer func() { *o = (*o)[:0]; addOptPool.Put(o) }()
 
 	*o = append(*o, metric.WithAttributes(
-		append(attrs[:len(attrs):len(attrs)],
-			attribute.String("nats.client.error.kind", string(kind)),
+		append(slices.Clip(attrs),
+			semconv.NATSClientErrorKind(string(kind)),
 		)...,
 	))
 	m.Int64Counter.Add(ctx, incr, *o...)
@@ -388,13 +393,13 @@ func (m ClientAsyncErrors) AddSet(ctx context.Context, incr int64, set attribute
 // "messaging.destination.name" semantic convention. For async errors it
 // represents the subject on which the error was reported, if available.
 func (ClientAsyncErrors) AttrSubject(val string) attribute.KeyValue {
-	return attribute.String("messaging.destination.name", val)
+	return otelsemconv.MessagingDestinationName(val)
 }
 
 // AttrServerAddress returns an optional attribute for the "server.address"
 // semantic convention.
 func (ClientAsyncErrors) AttrServerAddress(val string) attribute.KeyValue {
-	return attribute.String("server.address", val)
+	return otelsemconv.ServerAddress(val)
 }
 
 // -----------------------------------------------------------------------------
@@ -464,17 +469,17 @@ func (m JetStreamConsumerPending) Observe(
 ) {
 	if len(attrs) == 0 {
 		o.Observe(val, metric.WithAttributes(
-			attribute.String("messaging.nats.stream", stream),
-			attribute.String("messaging.consumer.group.name", consumerGroupName),
+			semconv.MessagingNATSStream(stream),
+			otelsemconv.MessagingConsumerGroupName(consumerGroupName),
 		))
 
 		return
 	}
 
 	o.Observe(val, metric.WithAttributes(
-		append(attrs[:len(attrs):len(attrs)],
-			attribute.String("messaging.nats.stream", stream),
-			attribute.String("messaging.consumer.group.name", consumerGroupName),
+		append(slices.Clip(attrs),
+			semconv.MessagingNATSStream(stream),
+			otelsemconv.MessagingConsumerGroupName(consumerGroupName),
 		)...,
 	))
 }
@@ -485,7 +490,7 @@ func (m JetStreamConsumerPending) ObserveSet(o metric.Int64Observer, val int64, 
 }
 
 func (JetStreamConsumerPending) AttrServerAddress(val string) attribute.KeyValue {
-	return attribute.String("server.address", val)
+	return otelsemconv.ServerAddress(val)
 }
 
 // -----------------------------------------------------------------------------
@@ -543,17 +548,17 @@ func (m JetStreamConsumerAckPending) Observe(
 ) {
 	if len(attrs) == 0 {
 		o.Observe(val, metric.WithAttributes(
-			attribute.String("messaging.nats.stream", stream),
-			attribute.String("messaging.consumer.group.name", consumerGroupName),
+			semconv.MessagingNATSStream(stream),
+			otelsemconv.MessagingConsumerGroupName(consumerGroupName),
 		))
 
 		return
 	}
 
 	o.Observe(val, metric.WithAttributes(
-		append(attrs[:len(attrs):len(attrs)],
-			attribute.String("messaging.nats.stream", stream),
-			attribute.String("messaging.consumer.group.name", consumerGroupName),
+		append(slices.Clip(attrs),
+			semconv.MessagingNATSStream(stream),
+			otelsemconv.MessagingConsumerGroupName(consumerGroupName),
 		)...,
 	))
 }
@@ -617,17 +622,17 @@ func (m JetStreamConsumerRedelivered) Observe(
 ) {
 	if len(attrs) == 0 {
 		o.Observe(val, metric.WithAttributes(
-			attribute.String("messaging.nats.stream", stream),
-			attribute.String("messaging.consumer.group.name", consumerGroupName),
+			semconv.MessagingNATSStream(stream),
+			otelsemconv.MessagingConsumerGroupName(consumerGroupName),
 		))
 
 		return
 	}
 
 	o.Observe(val, metric.WithAttributes(
-		append(attrs[:len(attrs):len(attrs)],
-			attribute.String("messaging.nats.stream", stream),
-			attribute.String("messaging.consumer.group.name", consumerGroupName),
+		append(slices.Clip(attrs),
+			semconv.MessagingNATSStream(stream),
+			otelsemconv.MessagingConsumerGroupName(consumerGroupName),
 		)...,
 	))
 }
