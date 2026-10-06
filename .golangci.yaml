@@ -3,7 +3,6 @@
 version: "2"
 
 run:
-  go: "1.26"
   build-tags: [ safe ]
   modules-download-mode: readonly
 
@@ -11,20 +10,18 @@ linters:
   default: all
   disable:
     # Project specific linters
-    - goconst
-    - tparallel
-    - paralleltest
+    - goconst # repeated string literals are often clearer than extracted consts here
+    - paralleltest # not all tests are safe to parallelize in this repo
+    - tparallel # as above
     # Discouraged linters
-    - noinlineerr # Disallows inline error handling (`if err := ...; err != nil {`).
-    - embeddedstructfieldcheck #  Embedded types should be at the top of the field list of a struct, and there must be an empty line separating embedded fields from regular fields. [fast]
     - cyclop # checks function and package cyclomatic complexity [fast: false, auto-fix: false]
     - depguard # Go linter that checks if package imports are in a list of acceptable packages [fast: true, auto-fix: false]
     - dogsled # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f()) [fast: true, auto-fix: false]
     - dupl # Tool for code clone detection [fast: true, auto-fix: false]
     - dupword # checks for duplicate words in the source code [fast: true, auto-fix: false]
-    - dogsled # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f()) [fast: true, auto-fix: false]
+    - embeddedstructfieldcheck #  Embedded types should be at the top of the field list of a struct, and there must be an empty line separating embedded fields from regular fields. [fast]
     - err113 # Go linter to check the errors handling expressions [fast: false, auto-fix: false]
-    - exhaustruct # Checks if all structure fields are initialized [fast: false, auto-fix: false]
+    - exhaustruct_v5 # as above
     - funlen # Tool for detection of long functions [fast: true, auto-fix: false]
     - ginkgolinter # enforces standards of using ginkgo and gomega [fast: false, auto-fix: false]
     - gochecknoglobals # Check that no global variables exist. [fast: false, auto-fix: false]
@@ -38,9 +35,10 @@ linters:
     - ireturn # Accept Interfaces, Return Concrete Types [fast: false, auto-fix: false]
     - lll # Reports long lines [fast: true, auto-fix: false]
     - maintidx # maintidx measures the maintainability index of each function. [fast: true, auto-fix: false]
+    - mnd # An analyzer to detect magic numbers. [fast: true, auto-fix: false]
     - nestif # Reports deeply nested if statements [fast: true, auto-fix: false]
     - nlreturn # nlreturn checks for a new line before return and branch statements to increase code clarity [fast: true, auto-fix: false]
-    - mnd # An analyzer to detect magic numbers. [fast: true, auto-fix: false]
+    - noinlineerr # Disallows inline error handling (`if err := ...; err != nil {`).
     - perfsprint # Checks that fmt.Sprintf can be replaced with a faster alternative. [fast: false, auto-fix: false]
     - prealloc # Finds slice declarations that could potentially be pre-allocated [fast: true, auto-fix: false]
     - protogetter # Reports direct reads from proto message fields when getters should be used [fast: false, auto-fix: true]
@@ -51,8 +49,10 @@ linters:
     - varnamelen # checks that the length of a variable's name matches its scope [fast: false, auto-fix: false]
     - wrapcheck # Checks that errors returned from external packages are wrapped [fast: false, auto-fix: false]
     - zerologlint # Detects the wrong usage of `zerolog` that a user forgets to dispatch with `Send` or `Msg` [fast: false, auto-fix: false]
-    # Deprected linters
-    - wsl
+    # Deprecated linters — successors stay enabled
+    - exhaustruct # replaced by exhaustruct_v5 (deprecated); requires every struct field set, impractical outside config
+    - gomodguard # replaced by gomodguard_v2 (deprecated v2.12.0)
+    - wsl # replaced by wsl_v5 (deprecated v2.2.0)
 
   # https://golangci-lint.run/docs/linters/
   settings:
@@ -67,6 +67,8 @@ linters:
     # https://golangci-lint.run/docs/linters/configuration/#gomoddirectives
     gomoddirectives:
       replace-local: true
+      tool-forbidden: true
+      toolchain-forbidden: true
     # https://golangci-lint.run/docs/linters/configuration/#gosec
     gosec:
       severity: medium
@@ -80,6 +82,7 @@ linters:
           disabled: true
   exclusions:
     generated: lax
+    warn-unused: true
     presets:
       - comments
       - common-false-positives
@@ -98,5 +101,7 @@ linters:
 # https://golangci-lint.run/docs/formatters/
 formatters:
   enable:
-    - gofmt
+    # https://golangci-lint.run/docs/formatters/configuration/#gofumpt
+    - gofumpt
+    # https://golangci-lint.run/docs/formatters/configuration/#goimports
     - goimports

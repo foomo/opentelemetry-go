@@ -13,12 +13,18 @@ import (
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 )
 
-// TestMainReportMetrics sets up a MeterProvider with a metric exporter for testing and returns it along with a flush function.
+// TestMainReportMetrics returns a MeterProvider backed by a manual reader and
+// a flush function for use in TestMain. Calling flush collects all metrics,
+// writes them to exporter prefixed with the caller's file and line, and shuts
+// down the provider. flush panics on any collect, export or shutdown error.
 //
-//		func TestMain(m *testing.M) {
-//	   exporter := glossymetric.NewTestingM(m)
-//			mp, flush := oteltesting.TestMainReportMetrics(m, exporter)
-//		}
+//	func TestMain(m *testing.M) {
+//		mp, flush := oteltesting.TestMainReportMetrics(m, glossymetric.NewTestMain(m))
+//		otel.SetMeterProvider(mp)
+//		code := m.Run()
+//		flush()
+//		os.Exit(code)
+//	}
 func TestMainReportMetrics(m *testing.M, exporter metric.Exporter) (*metric.MeterProvider, func()) {
 	reader := metric.NewManualReader()
 	mp := metric.NewMeterProvider(metric.WithReader(reader))
@@ -51,12 +57,16 @@ func TestMainReportMetrics(m *testing.M, exporter metric.Exporter) (*metric.Mete
 	}
 }
 
-// ReportMetrics sets up a MeterProvider for metrics reporting and returns it along with a cleanup function.
+// ReportMetrics returns a MeterProvider backed by a manual reader. When the
+// test finishes, a tb.Cleanup hook collects all metrics, writes them to
+// exporter prefixed with the caller's file and line, and shuts down the
+// provider. Errors are reported with tb.Fatal.
 //
-//		func TestWithMetrics(t *testing.T) {
-//	    exporter := glossymetric.NewTest(t)
-//		  mp := oteltesting.ReportMetrics(t, exporter)
-//		}
+//	func TestWithMetrics(t *testing.T) {
+//		mp := oteltesting.ReportMetrics(t, glossymetric.NewTest(t))
+//		counter, _ := mp.Meter("test").Int64Counter("requests")
+//		counter.Add(t.Context(), 1)
+//	}
 func ReportMetrics(tb testing.TB, exporter metric.Exporter) *metric.MeterProvider {
 	tb.Helper()
 

@@ -37,14 +37,7 @@ go.work:
 
 .PHONY: check
 ## Run lint & tests
-check: tidy generate lint test audit
-
-.PHONY: tidy
-## Run go mod tidy
-tidy: go.work
-	@echo "〉go mod tidy"
-	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go mod tidy) &&) true
-	@go work use -r . && go work sync
+check: tidy generate lint.fix test.race audit
 
 .PHONY: lint
 ## Run linter
@@ -91,23 +84,29 @@ test.bench: go.work
 ## Run security audit
 audit:
 	@echo "〉security audit"
-	#@trivy fs . --format table --severity HIGH,CRITICAL
-	@go install golang.org/x/vuln/cmd/govulncheck@latest
-	@go govulncheck ./...
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && govulncheck ./...) &&) true
+
+### Dependencies
+
+.PHONY: tidy
+## Run go mod tidy
+tidy:
+	@echo "〉go mod tidy"
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go mod tidy) &&) true
+	@go work use -r . && go work sync
 
 .PHONY: outdated
 ## Show outdated direct dependencies
 outdated:
-	@echo "〉mise"
-	@mise outdated -l --local
 	@echo "〉go mod outdated"
-	@find . -name 'go.mod' -exec dirname {} \; | xargs -I {} sh -c 'cd {} && go list -u -m -json all' \; | go-mod-outdated -update -direct
+	@$(foreach mod,$(GOMODS),(cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && GOWORK=off go-mod-upgrade --list) &&) true
 
 .PHONY: upgrade
-## Show outdated direct dependencies
-upgrade: go.work
+## Upgrade direct dependencies
+upgrade:
 	@echo "〉go mod upgrade"
-	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go get -u ./...) &&) true
+	@$(foreach mod,$(GOMODS),(cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && GOWORK=off go-mod-upgrade }) &&) true
+	@$(MAKE) tidy
 
 ### Release
 
@@ -143,21 +142,37 @@ godocs:
 
 ### Utils
 
+.PHONY: actionlint
+## Run actionlint
+actionlint:
+	@actionlint
+
 .PHONY: help
+# https://patorjk.com/software/taag/#p=display&f=Future+Smooth&t=keel&x=none&v=4&h=4&w=80&we=false
 ## Show help text
+help: g=\033[0;32m
+help: b=\033[0;34m
+help: w=\033[0;90m
+help: e=\033[0m
 help:
-	@echo "opentelemetry-go\n"
-	@echo "Usage:\n  make [task]"
+	@echo "$(g)"
+	@echo "╭─╮╭─╮╭─╴╭╮╷╶┬╴╭─╴╷  ╭─╴╭┬╮╭─╴╶┬╴╭─╮╷ ╷   ╭─╴╭─╮"
+	@echo "│ │├─╯├╴ │╰┤ │ ├╴ │  ├╴ │││├╴  │ ├┬╯╰┬╯╶─╴│╶╮│ │"
+	@echo "╰─╯╵  ╰─╴╵ ╵ ╵ ╰─╴╰─╴╰─╴╵ ╵╰─╴ ╵ ╵╰╴ ╵    ╰─╯╰─╯"
+	@echo "with ❤ foomo by bestbytes"
+	@echo "$(e)"
+	@echo "$(b)Usage:$(e)\n  make [task]"
 	@awk '{ \
 		if($$0 ~ /^### /){ \
-			if(help) printf "%-23s %s\n\n", cmd, help; help=""; \
-			printf "\n%s:\n", substr($$0,5); \
+			if(help) printf "  %-21s $(w)%s$(e)\n\n", cmd, help; help=""; \
+			printf "$(b)\n%s:$(e)\n", substr($$0,5); \
 		} else if($$0 ~ /^[a-zA-Z0-9._-]+:/){ \
 			cmd = substr($$0, 1, index($$0, ":")-1); \
-			if(help) printf "  %-23s %s\n", cmd, help; help=""; \
+			if(help) printf "  %-21s $(w)%s$(e)\n", cmd, help; help=""; \
 		} else if($$0 ~ /^##/){ \
 			help = help ? help "\n                        " substr($$0,3) : substr($$0,3); \
 		} else if(help){ \
-			print "\n                        " help "\n"; help=""; \
+			print "\n                        $(w)" help "$(e)\n"; help=""; \
 		} \
 	}' $(MAKEFILE_LIST)
+	@echo ""

@@ -68,7 +68,8 @@ func WithSpanAttributes() Option {
 	})
 }
 
-// WithoutTimestamps disables timestamp output.
+// WithoutTimestamps disables printing of span start timestamps, which makes
+// output deterministic.
 func WithoutTimestamps() Option {
 	return optionFunc(func(cfg config) config {
 		cfg.timestamps = false
@@ -87,7 +88,7 @@ func WithMinDuration(d time.Duration) Option {
 
 // WithDurationThresholds sets the duration thresholds for color-coding.
 // Spans faster than warn are green, between warn and critical are yellow,
-// and slower than critical are red.
+// and slower than critical are red. Defaults are 10ms and 100ms.
 func WithDurationThresholds(warn, critical time.Duration) Option {
 	return optionFunc(func(cfg config) config {
 		cfg.durationWarn = warn

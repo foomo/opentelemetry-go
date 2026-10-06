@@ -8,8 +8,9 @@ import (
 	"go.opentelemetry.io/otel/sdk/metric"
 )
 
-// NewTest creates a metric exporter with the provided options and associates it with the testing.TB instance.
-// It uses tb.Output() as the writer and calls tb.Fatal() if initialization fails.
+// NewTest returns an Exporter configured by opts that writes to tb.Output(),
+// so its output is attributed to the test. Options in opts take precedence.
+// It calls tb.Fatal if the exporter cannot be created.
 func NewTest(tb testing.TB, opts ...Option) metric.Exporter {
 	tb.Helper()
 
@@ -21,7 +22,10 @@ func NewTest(tb testing.TB, opts ...Option) metric.Exporter {
 	return exporter
 }
 
-// NewTestMain creates a new metric exporter configured for testing and outputs to os.Stdout by default.
+// NewTestMain returns an Exporter configured by opts for use in TestMain. It
+// writes to os.Stdout unless opts sets [WithWriter]. m is accepted to restrict
+// the call to TestMain and is otherwise unused. It panics if the exporter
+// cannot be created.
 func NewTestMain(m testingx.M, opts ...Option) metric.Exporter {
 	exporter, err := New(append([]Option{WithWriter(os.Stdout)}, opts...)...)
 	if err != nil {

@@ -128,7 +128,7 @@ func (e *Exporter) printLinks(span sdktrace.ReadOnlySpan, indent string, spanInd
 		if e.cfg.showAttributes && len(link.Attributes) > 0 {
 			for _, attr := range link.Attributes {
 				k := renderStyled(styleAttrKey, string(attr.Key))
-				v := renderStyled(styleAttrVal, attr.Value.Emit())
+				v := renderStyled(styleAttrVal, attr.Value.String())
 				_, _ = fmt.Fprintf(w, "%s  %s=%s\n", indent, k, v)
 			}
 		}
@@ -145,7 +145,7 @@ func (e *Exporter) printAttributes(span sdktrace.ReadOnlySpan, indent string) {
 
 	for _, attr := range attrs {
 		key := renderStyled(styleAttrKey, string(attr.Key))
-		val := renderStyled(styleAttrVal, attr.Value.Emit())
+		val := renderStyled(styleAttrVal, attr.Value.String())
 		_, _ = fmt.Fprintf(w, "%s%s=%s\n", indent, key, val)
 	}
 }
@@ -165,7 +165,7 @@ func (e *Exporter) printEvents(span sdktrace.ReadOnlySpan, indent string) {
 
 		for _, attr := range event.Attributes {
 			key := renderStyled(styleAttrKey, string(attr.Key))
-			val := renderStyled(styleAttrVal, attr.Value.Emit())
+			val := renderStyled(styleAttrVal, attr.Value.String())
 			_, _ = fmt.Fprintf(w, "%s  %s=%s\n", indent, key, val)
 		}
 	}

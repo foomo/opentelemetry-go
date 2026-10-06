@@ -5,6 +5,7 @@ import (
 )
 
 const (
+	// ProfileNameKey is the key for profile.name.
 	ProfileNameKey = attribute.Key("profile.name")
 )
 

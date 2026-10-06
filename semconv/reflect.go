@@ -11,7 +11,8 @@ const (
 	ReflectTypeKey = attribute.Key("reflect.type")
 )
 
-// ReflectType returns a new attribute.KeyValue for reflect.type.
+// ReflectType returns a new attribute.KeyValue for reflect.type set to the
+// dynamic type name of v, such as "*errors.errorString". It panics if v is nil.
 func ReflectType(v any) attribute.KeyValue {
 	return ReflectTypeKey.String(reflect.TypeOf(v).String())
 }
