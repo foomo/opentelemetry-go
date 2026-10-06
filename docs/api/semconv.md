@@ -52,6 +52,24 @@ Extends upstream `semconv.ErrorType`: maps `context.Canceled` and `context.Deadl
 | `KeelServiceName(v string)` | `keel.service.name` | `string` | `attribute.KeyValue` |
 | `KeelServiceInst(v int)` | `keel.service.inst` | `int` | `attribute.KeyValue` |
 
+## Circuit Breaker Attributes
+
+| Function | Key | Parameter | Return |
+|---|---|---|---|
+| `CircuitBreakerName(v string)` | `circuit_breaker.name` | `string` | `attribute.KeyValue` |
+| `CircuitBreakerState(v string)` | `circuit_breaker.state` | `string` | `attribute.KeyValue` |
+
+## Distributed Lock Attributes
+
+| Function | Key | Parameter | Return |
+|---|---|---|---|
+| `DistributedLockName(v string)` | `distributed_lock.name` | `string` | `attribute.KeyValue` |
+| `DistributedLockSystem(v string)` | `distributed_lock.system` | `string` | `attribute.KeyValue` |
+| `DistributedLockAcquireResult(v string)` | `distributed_lock.acquire.result` | `string` | `attribute.KeyValue` |
+| `DistributedLockOwnerID(v string)` | `distributed_lock.owner.id` | `string` | `attribute.KeyValue` |
+
+`distributed_lock.name` must be the logical lock name, not the per-resource key. `distributed_lock.owner.id` values are unbounded: use on spans and logs only, never on metrics.
+
 ## NATS Attributes
 
 | Function | Key | Parameter | Return |
@@ -80,6 +98,9 @@ Extends upstream `semconv.ErrorType`: maps `context.Canceled` and `context.Deadl
 |---|---|---|---|
 | `TraceID(v string)` | `trace.id` | `string` | `attribute.KeyValue` |
 | `SpanID(v string)` | `span.id` | `string` | `attribute.KeyValue` |
+| `SamplingPriority(v int)` | `sampling.priority` | `int` | `attribute.KeyValue` |
+
+`sampling.priority > 0` asks samplers to keep the trace. Match it in the collector with a `tail_sampling` `numeric_attribute` policy (`min_value: 1`).
 
 ## Tracking Attributes
 
@@ -195,3 +216,66 @@ All gauges also provide `ObserveSet(o, val, set attribute.Set)`. Call `Observe` 
 
 - `AsyncErrorKindAttr` (`nats.client.error.kind`): `AsyncErrorKindSlowConsumer`, `AsyncErrorKindPermissionViolation`, `AsyncErrorKindAuthExpired`, `AsyncErrorKindAuthRevoked`, `AsyncErrorKindOther` (`_OTHER`)
 - `ConnectionStatusAttr` (`nats.client.connection.status`): `ConnectionStatusConnected`, `ConnectionStatusDisconnected`, `ConnectionStatusReconnecting`, `ConnectionStatusConnecting`, `ConnectionStatusDraining`, `ConnectionStatusClosed`
+
+---
+
+## circuitbreakerconv
+
+```go
+import "github.com/foomo/opentelemetry-go/semconv/circuitbreakerconv"
+```
+
+Library-agnostic metric instrument wrappers for circuit breakers in the `circuit_breaker` namespace. Every constructor `New<Instrument>(m metric.Meter, opt ...)` returns a no-op instrument if the meter is `nil`. Each instrument exposes `Inst()`, `Name()`, `Unit()` and `Description()`.
+
+### Counters
+
+| Instrument | Name | Unit | Record |
+|---|---|---|---|
+| `StateChanges` | `circuit_breaker.state_changes` | `{change}` | `Add(ctx, incr, name, state StateAttr, attrs...)` |
+| `Rejections` | `circuit_breaker.rejections` | `{call}` | `Add(ctx, incr, name, attrs...)` |
+
+All counters also provide `AddSet(ctx, incr, set attribute.Set)`. `name` maps to `circuit_breaker.name`; for `StateChanges`, `state` is the state transitioned to.
+
+Optional attribute helpers:
+
+- `Rejections`: `AttrState(StateAttr)`
+
+### Enums
+
+- `StateAttr` (`circuit_breaker.state`): `StateClosed`, `StateOpen`, `StateHalfOpen`
+
+---
+
+## distributedlockconv
+
+```go
+import "github.com/foomo/opentelemetry-go/semconv/distributedlockconv"
+```
+
+Backend-agnostic metric instrument wrappers for distributed locks in the `distributed_lock` namespace. Every constructor `New<Instrument>(m metric.Meter, opt ...)` returns a no-op instrument if the meter is `nil`. Each instrument exposes `Inst()`, `Name()`, `Unit()` and `Description()`.
+
+### Histograms
+
+| Instrument | Name | Unit | Record |
+|---|---|---|---|
+| `AcquireDuration` | `distributed_lock.acquire.duration` | `s` | `Record(ctx, val, name, system SystemAttr, result AcquireResultAttr, attrs...)` |
+| `HoldDuration` | `distributed_lock.hold.duration` | `s` | `Record(ctx, val, name, system SystemAttr, attrs...)` |
+
+All histograms also provide `RecordSet(ctx, val, set attribute.Set)`. `AcquireDuration` includes time spent waiting; its count doubles as the number of acquire attempts.
+
+Optional attribute helpers:
+
+- `AcquireDuration`: `AttrErrorType(error)` (`error.type`)
+
+### Counters
+
+| Instrument | Name | Unit | Record |
+|---|---|---|---|
+| `Lost` | `distributed_lock.lost` | `{lock}` | `Add(ctx, incr, name, system SystemAttr, attrs...)` |
+
+Also provides `AddSet(ctx, incr, set attribute.Set)`. Counts locks lost while still held (lease expired or taken over).
+
+### Enums
+
+- `SystemAttr` (`distributed_lock.system`): `SystemRedis`, `SystemMongoDB`, `SystemNATS`, `SystemEtcd`, `SystemPostgreSQL`
+- `AcquireResultAttr` (`distributed_lock.acquire.result`): `AcquireResultAcquired`, `AcquireResultContended`, `AcquireResultTimeout`, `AcquireResultError`
