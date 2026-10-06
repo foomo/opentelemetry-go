@@ -13,10 +13,10 @@ import "github.com/foomo/opentelemetry-go/semconv"
 
 ## Pattern
 
-Each file defines unexported `attribute.Key` constants paired with exported constructor functions that return `attribute.KeyValue`:
+Each file defines exported `<Name>Key` `attribute.Key` constants paired with exported `<Name>` constructor functions that return `attribute.KeyValue`:
 
 ```go
-// Unexported key constant
+// Key constant
 const GoTSRPCFuncKey = attribute.Key("gotsrpc.func")
 
 // Exported constructor
@@ -45,12 +45,38 @@ Attributes for the [GoTSRPC](https://github.com/foomo/gotsrpc) framework:
 | `GoTSRPCErrorMessage(v)` | `gotsrpc.error.message` | string |
 | `GoTSRPCErrorType(v)` | `gotsrpc.error.type` | string |
 
+### Error
+
+| Constructor | Key | Type |
+|---|---|---|
+| `ErrorType(err)` | `error.type` | error |
+
+Drop-in for upstream `semconv.ErrorType` that reports `context.Canceled` and `context.DeadlineExceeded` (also when wrapped) as stable values instead of reflected type names:
+
+```go
+err := fmt.Errorf("fetch user: %w", context.DeadlineExceeded)
+span.SetAttributes(semconv.ErrorType(err)) // error.type="context.DeadlineExceeded"
+```
+
 ### HTTP
 
 | Constructor | Key | Type |
 |---|---|---|
 | `HTTPXRequestID(v)` | `http.request.id` | string |
 | `HTTPXRequestReferer(v)` | `http.request.referer` | string |
+
+::: warning Deprecated
+Both live in the upstream `http.request.*` namespace. Use `semconv.HTTPRequestHeader("x-request-id", v)` / `semconv.HTTPRequestHeader("referer", v)` from `go.opentelemetry.io/otel/semconv` instead.
+:::
+
+### NATS
+
+| Constructor | Key | Type |
+|---|---|---|
+| `NATSClientName(v)` | `nats.client.name` | string |
+| `NATSClientErrorKind(v)` | `nats.client.error.kind` | string |
+| `MessagingNATSStream(v)` | `messaging.nats.stream` | string |
+| `MessagingSystemNats` (var) | `messaging.system` = `nats` | — |
 
 ### Keel
 
@@ -71,6 +97,8 @@ Attributes for the [Keel](https://github.com/foomo/keel) service framework:
 | `TraceID(v)` | `trace.id` | string |
 | `SpanID(v)` | `span.id` | string |
 | `TrackingID(v)` | `tracking.id` | string |
+
+`tracking.id` is unbounded — use on spans and logs only, never as a metric attribute.
 
 ## Usage
 
@@ -114,5 +142,25 @@ The instrument is pre-configured with:
 - **Name**: `gotsrpc.execution.duration`
 - **Unit**: `s`
 - **Description**: `Duration of GOTSRPC execution.`
+
+## natsconv -- Metric Instruments
+
+The `natsconv` sub-package provides NATS client and JetStream consumer instruments:
+
+```go
+import "github.com/foomo/opentelemetry-go/semconv/natsconv"
+```
+
+```go
+disconnects, err := natsconv.NewClientDisconnects(meter)
+if err != nil {
+	return err
+}
+disconnects.Add(ctx, 1, nc.ConnectedUrl(),
+	disconnects.AttrClientName("my-service"),
+)
+```
+
+Counters: `ClientDisconnects`, `ClientReconnects`, `ClientAsyncErrors`. Observable gauges (observe from a registered callback): `JetStreamConsumerPending`, `JetStreamConsumerAckPending`, `JetStreamConsumerRedelivered`.
 
 See the full API in the [semconv API reference](/api/semconv).

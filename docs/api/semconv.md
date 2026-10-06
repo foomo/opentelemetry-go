@@ -11,6 +11,14 @@ import "github.com/foomo/opentelemetry-go/semconv"
 
 Custom semantic convention attribute keys and constructors. Part of the root module.
 
+## Error Attributes
+
+| Function | Key | Parameter | Return |
+|---|---|---|---|
+| `ErrorType(err error)` | `error.type` | `error` | `attribute.KeyValue` |
+
+Extends upstream `semconv.ErrorType`: maps `context.Canceled` and `context.DeadlineExceeded` (also when wrapped) to the stable values `context.Canceled` and `context.DeadlineExceeded` instead of their reflected type names.
+
 ## GoTSRPC Attributes
 
 | Function | Key | Parameter | Return |
@@ -32,6 +40,10 @@ Custom semantic convention attribute keys and constructors. Part of the root mod
 | `HTTPXRequestID(v string)` | `http.request.id` | `string` | `attribute.KeyValue` |
 | `HTTPXRequestReferer(v string)` | `http.request.referer` | `string` | `attribute.KeyValue` |
 
+::: warning Deprecated
+`http.request.*` is an upstream namespace. Use `semconv.HTTPRequestHeader("x-request-id", v)` and `semconv.HTTPRequestHeader("referer", v)` from `go.opentelemetry.io/otel/semconv` instead.
+:::
+
 ## Keel Attributes
 
 | Function | Key | Parameter | Return |
@@ -39,6 +51,16 @@ Custom semantic convention attribute keys and constructors. Part of the root mod
 | `KeelServiceType(v string)` | `keel.service.type` | `string` | `attribute.KeyValue` |
 | `KeelServiceName(v string)` | `keel.service.name` | `string` | `attribute.KeyValue` |
 | `KeelServiceInst(v int)` | `keel.service.inst` | `int` | `attribute.KeyValue` |
+
+## NATS Attributes
+
+| Function | Key | Parameter | Return |
+|---|---|---|---|
+| `NATSClientName(v string)` | `nats.client.name` | `string` | `attribute.KeyValue` |
+| `NATSClientErrorKind(v string)` | `nats.client.error.kind` | `string` | `attribute.KeyValue` |
+| `MessagingNATSStream(v string)` | `messaging.nats.stream` | `string` | `attribute.KeyValue` |
+
+`MessagingSystemNats` is a predefined `messaging.system="nats"` attribute.
 
 ## Profile Attributes
 
@@ -64,6 +86,8 @@ Custom semantic convention attribute keys and constructors. Part of the root mod
 | Function | Key | Parameter | Return |
 |---|---|---|---|
 | `TrackingID(v string)` | `tracking.id` | `string` | `attribute.KeyValue` |
+
+`tracking.id` values are unbounded: use on spans and logs only, never on metrics.
 
 ---
 
@@ -131,3 +155,43 @@ func (ExecutionDuration) AttrError(val bool) attribute.KeyValue
 ```
 
 Returns `attribute.Bool("gotsprc.error", val)`.
+
+---
+
+## natsconv
+
+```go
+import "github.com/foomo/opentelemetry-go/semconv/natsconv"
+```
+
+Typed metric instrument wrappers for NATS conventions in the `nats` and `messaging.nats` namespaces. Every constructor `New<Instrument>(m metric.Meter, opt ...)` returns a no-op instrument if the meter is `nil`. Each instrument exposes `Inst()`, `Name()`, `Unit()` and `Description()`.
+
+### Counters
+
+| Instrument | Name | Unit | Record |
+|---|---|---|---|
+| `ClientDisconnects` | `nats.client.disconnects` | `{event}` | `Add(ctx, incr, serverAddress, attrs...)` |
+| `ClientReconnects` | `nats.client.reconnects` | `{event}` | `Add(ctx, incr, serverAddress, attrs...)` |
+| `ClientAsyncErrors` | `nats.client.async_errors` | `{error}` | `Add(ctx, incr, kind AsyncErrorKindAttr, attrs...)` |
+
+All counters also provide `AddSet(ctx, incr, set attribute.Set)`.
+
+Optional attribute helpers:
+
+- `ClientDisconnects`, `ClientReconnects`: `AttrServerPort(int)`, `AttrClientName(string)`
+- `ClientAsyncErrors`: `AttrSubject(string)` (`messaging.destination.name`), `AttrServerAddress(string)`
+
+### Observable Gauges
+
+| Instrument | Name | Unit | Record |
+|---|---|---|---|
+| `JetStreamConsumerPending` | `nats.jetstream.consumer.pending` | `{message}` | `Observe(o, val, stream, consumerGroupName, attrs...)` |
+| `JetStreamConsumerAckPending` | `nats.jetstream.consumer.ack_pending` | `{message}` | `Observe(o, val, stream, consumerGroupName, attrs...)` |
+| `JetStreamConsumerRedelivered` | `nats.jetstream.consumer.redelivered` | `{message}` | `Observe(o, val, stream, consumerGroupName, attrs...)` |
+
+All gauges also provide `ObserveSet(o, val, set attribute.Set)`. Call `Observe` from a callback registered with the meter. `stream` maps to `messaging.nats.stream`, `consumerGroupName` to `messaging.consumer.group.name`.
+
+### Enums
+
+- `AsyncErrorKindAttr` (`nats.client.error.kind`): `AsyncErrorKindSlowConsumer`, `AsyncErrorKindPermissionViolation`, `AsyncErrorKindAuthExpired`, `AsyncErrorKindAuthRevoked`, `AsyncErrorKindOther` (`_OTHER`)
+- `ConnectionStatusAttr` (`nats.client.connection.status`): `ConnectionStatusConnected`, `ConnectionStatusDisconnected`, `ConnectionStatusReconnecting`, `ConnectionStatusConnecting`, `ConnectionStatusDraining`, `ConnectionStatusClosed`

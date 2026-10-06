@@ -7,7 +7,7 @@ description: Install opentelemetry-go and run your first trace
 
 ## Prerequisites
 
-- **Go 1.26+**
+- **Go 1.27+**
 - Familiarity with the [OpenTelemetry Go SDK](https://opentelemetry.io/docs/languages/go/)
 
 ## Installation
@@ -45,7 +45,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.40.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.43.0"
 )
 
 func main() {
