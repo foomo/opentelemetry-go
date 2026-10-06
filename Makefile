@@ -37,14 +37,7 @@ go.work:
 
 .PHONY: check
 ## Run lint & tests
-check: tidy generate lint test audit
-
-.PHONY: tidy
-## Run go mod tidy
-tidy: go.work
-	@echo "〉go mod tidy"
-	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go mod tidy) &&) true
-	@go work use -r . && go work sync
+check: tidy generate lint.fix test.race audit
 
 .PHONY: lint
 ## Run linter
@@ -91,23 +84,29 @@ test.bench: go.work
 ## Run security audit
 audit:
 	@echo "〉security audit"
-	#@trivy fs . --format table --severity HIGH,CRITICAL
-	@go install golang.org/x/vuln/cmd/govulncheck@latest
-	@govulncheck ./...
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && govulncheck ./...) &&) true
+
+### Dependencies
+
+.PHONY: tidy
+## Run go mod tidy
+tidy:
+	@echo "〉go mod tidy"
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go mod tidy) &&) true
+	@go work use -r . && go work sync
 
 .PHONY: outdated
 ## Show outdated direct dependencies
 outdated:
-	@echo "〉mise"
-	@mise outdated -l --local
 	@echo "〉go mod outdated"
-	@find . -name 'go.mod' -exec dirname {} \; | xargs -I {} sh -c 'cd {} && go list -u -m -json all' \; | go-mod-outdated -update -direct
+	@$(foreach mod,$(GOMODS),(cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && GOWORK=off go-mod-upgrade --list) &&) true
 
 .PHONY: upgrade
-## Show outdated direct dependencies
-upgrade: go.work
+## Upgrade direct dependencies
+upgrade:
 	@echo "〉go mod upgrade"
-	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go get -u ./...) &&) true
+	@$(foreach mod,$(GOMODS),(cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && GOWORK=off go-mod-upgrade }) &&) true
+	@$(MAKE) tidy
 
 ### Release
 
