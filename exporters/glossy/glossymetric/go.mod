@@ -3,7 +3,7 @@ module github.com/foomo/opentelemetry-go/exporters/glossy/glossymetric
 go 1.27
 
 require (
-	charm.land/lipgloss/v2 v2.0.6
+	charm.land/lipgloss/v2 v2.1.1
 	github.com/foomo/go v0.17.1
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/sdk v1.47.0
